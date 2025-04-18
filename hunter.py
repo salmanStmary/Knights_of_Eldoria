@@ -2,25 +2,16 @@ import random
 
 class Hunter:
     def __init__(self):
-        # Position
         self.x = random.randint(0, 19)
         self.y = random.randint(0, 19)
-        
-        # Vital stats
         self.health = 100
         self.steps_without_health = 0
-        
-        # Treasure tracking
-        self.carrying_treasure = None  # Currently carrying ('bronze', 'silver', 'gold')
-        self._stored_treasures = {'bronze': 0, 'silver': 0, 'gold': 0}  # Internal storage
-        
-        # Memory
+        self.carrying_treasure = None 
+        self._stored_treasures = {'bronze': 0, 'silver': 0, 'gold': 0}
         self.memory = {
-            'treasures': [],  # List of (x, y, type) tuples
-            'hideouts': []    # List of (x, y) tuples
+            'treasures': [],  
+            'hideouts': []    
         }
-        
-        # Skills
         self.skill = random.choice(['navigation', 'endurance', 'stealth'])
 
     @property
@@ -43,9 +34,7 @@ class Hunter:
         if 0 <= new_x < 20 and 0 <= new_y < 20:
             self.x = new_x
             self.y = new_y
-            self.health -= 2  # Decrease health by 2% per move
-            
-            # Critical health check
+            self.health -= 2
             if self.health <= 6:
                 self.seek_rest()
             return True
@@ -71,8 +60,7 @@ class Hunter:
         """Collect treasure from current cell if available"""
         if self.carrying_treasure is None and grid[self.x][self.y] in ['bronze', 'silver', 'gold']:
             self.carrying_treasure = grid[self.x][self.y]
-            grid[self.x][self.y] = None  # Remove treasure from grid
-            # Remove from memory
+            grid[self.x][self.y] = None
             self.memory['treasures'] = [t for t in self.memory['treasures'] 
                                       if t[0] != self.x or t[1] != self.y]
 
@@ -85,12 +73,9 @@ class Hunter:
     def seek_rest(self):
         """Move toward nearest hideout when health is critical"""
         if not self.memory['hideouts']:
-            return  # No known hideouts
-            
+            return 
         closest = min(self.memory['hideouts'], 
                      key=lambda h: abs(h[0]-self.x) + abs(h[1]-self.y))
-        
-        # Simple movement toward hideout
         dx = 1 if closest[0] > self.x else -1 if closest[0] < self.x else 0
         dy = 1 if closest[1] > self.y else -1 if closest[1] < self.y else 0
         
@@ -105,12 +90,9 @@ class Hunter:
         if self.health <= 0:
             self.steps_without_health += 1
             if self.steps_without_health > 3:
-                return False  # Hunter has collapsed
+                return False
             return True
-            
         self.scan_area(grid)
-        
-        # Behavior priorities
         if self.carrying_treasure is not None:
             if grid[self.x][self.y] == 'hideout':
                 self.deposit_treasure(grid)
@@ -121,8 +103,6 @@ class Hunter:
                 self.collect_treasure(grid)
             else:
                 self.explore()
-        
-        # Health management
         if self.health <= 6 and grid[self.x][self.y] == 'hideout':
             self.rest()
             
@@ -130,7 +110,7 @@ class Hunter:
 
     def seek_hideout(self):
         """Move toward nearest hideout when carrying treasure"""
-        self.seek_rest()  # Same logic as seeking rest
+        self.seek_rest()
 
     def explore(self):
         """Move randomly to explore the grid"""
